@@ -1,26 +1,40 @@
 import React, { Component } from 'react';
 import './App.css';
 import TodoList from './components/TodoList';
+import TodoHeader from './components/Header';
+import TodoFooter from './components/Footer';
+import { ThemeContext } from './context/ThemeContext';
+
 class App extends Component {
-  constructor(props){
+  static contextType = ThemeContext;
+
+  constructor(props) {
     super(props);
-    this.state={
-      todos:[],
-      inputText:'',
-      filter:'all'
+    this.state = {
+      todos: [],
+      inputText: '',
+      filter: 'all',
+      currentPage: 1,
+      itemsPerPage: 8
     };
   }
 
-  handleInputChange = (e) => {
-    this.setState({ inputText: e.target.value });
-    console.log(e.target.value);
+  handlePageChange = (pageNumber) => {
+    this.setState({ currentPage: pageNumber });
   }
 
+
+  //cập nhập state khi nhập input
+  handleInputChange = (e) => {
+    this.setState({ inputText: e.target.value });
+  }
+
+  // Thêm công việc
   handleAddTodo = (e) => {
     e.preventDefault();
     const { inputText, todos } = this.state;
     if (!inputText.trim()) return;
-    const newTodo={
+    const newTodo = {
       id: Date.now(),
       text: inputText.trim(),
       completed: false
@@ -31,6 +45,7 @@ class App extends Component {
     });
   }
 
+  // Chuyển đổi trạng thái complete
   handleToggleTodo = (id) => {
     this.setState(({ todos }) => ({
       todos: todos.map(todo =>
@@ -39,117 +54,79 @@ class App extends Component {
     }));
   }
 
+  // Xóa công việc
   handleDeleteTodo = (id) => {
     this.setState(({ todos }) => ({
       todos: todos.filter(todo => todo.id !== id)
     }));
   }
 
-  handleToggleAll = () => {
-    this.setState(({ todos }) => {
-      const allCompleted = todos.every(t => t.completed);
-      return { todos: todos.map(t => ({ ...t, completed: !allCompleted })) };
-    });
+  // Sửa công việc
+  handleEditTodo = (id, newText) => {
+    if (!newText.trim()) {
+      this.handleDeleteTodo(id); // Nếu sửa thành rỗng thì xóa
+      return;
+    }
+    this.setState(({ todos }) => ({
+      todos: todos.map(todo =>
+        todo.id === id ? { ...todo, text: newText.trim() } : todo
+      )
+    }));
   }
 
+  // Đổi bộ lọc
   handleFilterChange = (filter) => {
-    this.setState({ filter });
+    this.setState({ filter: filter });
   }
 
+  // Xóa các mục đã hoàn thành
   handleClearCompleted = () => {
     this.setState(({ todos }) => ({
       todos: todos.filter(todo => !todo.completed)
     }));
   }
 
+  // Lấy danh sách công việc theo bộ lọc
   getFilteredTodos() {
     const { todos, filter } = this.state;
     if (filter === 'active') return todos.filter(t => !t.completed);
     if (filter === 'completed') return todos.filter(t => t.completed);
     return todos;
-
   }
-  render(){
+
+  render() {
     const { todos, inputText, filter } = this.state;
-    const remaining=todos.filter(t => !t.completed).length;
+    const { theme, toggleTheme } = this.context;
     const filteredTodos = this.getFilteredTodos();
 
     return (
-      <div className="todoapp">
-        <header className="header">
-          <h1>todos</h1>
-          <form onSubmit={this.handleAddTodo}>
-            <input
-              className="new-todo"
-              placeholder="What needs to be done?"
-              value={inputText}
-              onChange={this.handleInputChange}
-              autoFocus
-            />
-          </form>
-        </header>
-
+      <div className={`todoapp ${theme}`}>
+        <button
+          onClick={toggleTheme}
+          style={{ position: 'absolute', top: 10, right: 10, zIndex: 100, cursor: 'pointer' }}
+        >
+          Toggle {theme === 'light' ? 'Dark' : 'Light'} Mode
+        </button>
+        <TodoHeader
+          inputText={inputText}
+          onInputChange={this.handleInputChange}
+          onAddTodo={this.handleAddTodo}
+        />
         {todos.length > 0 && (
-          <section className="main">
-            <input
-              id="toggle-all"
-              className="toggle-all"
-              type="checkbox"
-              onChange={this.handleToggleAll}
-              checked={todos.every(t => t.completed)}
-            />
-            <label htmlFor="toggle-all"></label>
-
-            <TodoList
-              todos={filteredTodos}
-              onToggle={this.handleToggleTodo}
-              onDelete={this.handleDeleteTodo}
-            />
-          </section>
+          <TodoList
+            todos={filteredTodos} // Truyền danh sách đã lọc
+            onToggle={this.handleToggleTodo}
+            onDelete={this.handleDeleteTodo}
+            onEdit={this.handleEditTodo}
+          />
         )}
-
         {todos.length > 0 && (
-          <footer className="footer">
-            <span className="todo-count">
-              <strong>{remaining}</strong> {remaining === 1 ? 'item' : 'items'} left
-            </span>
-
-            <ul className="filters">
-              <li>
-                <button
-                  className={filter === 'all' ? 'selected' : ''}
-                  onClick={() => this.handleFilterChange('all')}
-                >
-                  All
-                </button>
-              </li>
-              <li>
-                <button
-                  className={filter === 'active' ? 'selected' : ''}
-                  onClick={() => this.handleFilterChange('active')}
-                >
-                  Active
-                </button>
-              </li>
-              <li>
-                <button
-                  className={filter === 'completed' ? 'selected' : ''}
-                  onClick={() => this.handleFilterChange('completed')}
-                >
-                  Completed
-                </button>
-              </li>
-            </ul>
-
-            {todos.some(t => t.completed) && (
-              <button
-                className="clear-completed"
-                onClick={this.handleClearCompleted}
-              >
-                Clear completed
-              </button>
-            )}
-          </footer>
+          <TodoFooter
+            todos={todos} // Footer cần danh sách đầy đủ để đếm
+            filter={filter}
+            onFilterChange={this.handleFilterChange}
+            onClearCompleted={this.handleClearCompleted}
+          />
         )}
       </div>
     );
