@@ -1,20 +1,23 @@
 import React, { Component } from 'react';
+import {produce} from 'immer';
 import './App.css';
 import TodoList from './components/TodoList';
 import TodoHeader from './components/Header';
 import TodoFooter from './components/Footer';
 import { ThemeContext } from './context/ThemeContext';
+import Pagination from './components/Pagination';
+
+
 
 class App extends Component {
-  static contextType = ThemeContext;
+  static contextType = ThemeContext;//đưa giá trị theme và toggleTheme vào this.context
 
   constructor(props) {
     super(props);
     this.state = {
       todos: [],
-      inputText: '',
       filter: 'all',
-      currentPage: 1,
+      currentPage: 1,   
       itemsPerPage: 8
     };
   }
@@ -23,60 +26,66 @@ class App extends Component {
     this.setState({ currentPage: pageNumber });
   }
 
-
-  //cập nhập state khi nhập input
-  handleInputChange = (e) => {
-    this.setState({ inputText: e.target.value });
-  }
-
   // Thêm công việc
-  handleAddTodo = (e) => {
-    e.preventDefault();
-    const { inputText, todos } = this.state;
-    if (!inputText.trim()) return;
-    const newTodo = {
-      id: Date.now(),
-      text: inputText.trim(),
-      completed: false
-    };
-    this.setState({
-      todos: [...todos, newTodo],
-      inputText: ''
-    });
+  handleAddTodo = (text) => {
+    this.setState(
+      produce((draft)=>{
+        draft.todos.unshift({ //dung unshift de them vao dau mang
+          id: Date.now(),
+          text: text,
+          completed: false
+        })
+      })
+    );
   }
 
   // Chuyển đổi trạng thái complete
   handleToggleTodo = (id) => {
-    this.setState(({ todos }) => ({
-      todos: todos.map(todo =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    }));
+    this.setState(
+      produce((draft) => {
+        const todo = draft.todos.find((t) => t.id === id);
+        if (todo) {
+          todo.completed = !todo.completed;
+        }
+      })
+    );
   }
 
   // Xóa công việc
   handleDeleteTodo = (id) => {
-    this.setState(({ todos }) => ({
-      todos: todos.filter(todo => todo.id !== id)
-    }));
+    this.setState(
+      produce((draft) => {
+        const index = draft.todos.findIndex((t) => t.id === id);
+        if (index !== -1) {
+          draft.todos.splice(index, 1);
+        }
+      })
+    );
   }
 
   // Sửa công việc
   handleEditTodo = (id, newText) => {
     if (!newText.trim()) {
-      this.handleDeleteTodo(id); // Nếu sửa thành rỗng thì xóa
+      this.handleDeleteTodo(id);
       return;
     }
-    this.setState(({ todos }) => ({
-      todos: todos.map(todo =>
-        todo.id === id ? { ...todo, text: newText.trim() } : todo
-      )
-    }));
+    this.setState(
+      produce((draft) => {
+        const todo = draft.todos.find((t) => t.id === id);
+        if (todo) {
+          todo.text = newText;
+        }
+      })
+    );
   }
 
   // Đổi bộ lọc
   handleFilterChange = (filter) => {
-    this.setState({ filter: filter });
+    this.setState({ filter: filter,currentPage:1 });
+  }
+
+  handlePageChange = (pageNumber) => {
+    this.setState({ currentPage: pageNumber });
   }
 
   // Xóa các mục đã hoàn thành
@@ -95,26 +104,24 @@ class App extends Component {
   }
 
   render() {
-    const { todos, inputText, filter } = this.state;
+    const { todos, filter,currentPage,itemsPerPage } = this.state;
     const { theme, toggleTheme } = this.context;
     const filteredTodos = this.getFilteredTodos();
-
+    const indexOfLastTodo = currentPage * itemsPerPage; //trang 2: 2*8=16
+    const indexOfFirstTodo = indexOfLastTodo - itemsPerPage;
+    const currentTodos = filteredTodos.slice(indexOfFirstTodo, indexOfLastTodo);
     return (
       <div className={`todoapp ${theme}`}>
         <button
           onClick={toggleTheme}
-          style={{ position: 'absolute', top: 10, right: 10, zIndex: 100, cursor: 'pointer' }}
+          style={{ position: 'absolute', top: 10, right: 10, zIndex: 5, cursor: 'pointer' }}
         >
-          Toggle {theme === 'light' ? 'Dark' : 'Light'} Mode
+          Theme {theme === 'light' ? 'Light' : 'Dark'} 
         </button>
-        <TodoHeader
-          inputText={inputText}
-          onInputChange={this.handleInputChange}
-          onAddTodo={this.handleAddTodo}
-        />
+        <TodoHeader onAddTodo={this.handleAddTodo} />
         {todos.length > 0 && (
           <TodoList
-            todos={filteredTodos} // Truyền danh sách đã lọc
+            todos={currentTodos}
             onToggle={this.handleToggleTodo}
             onDelete={this.handleDeleteTodo}
             onEdit={this.handleEditTodo}
@@ -122,10 +129,18 @@ class App extends Component {
         )}
         {todos.length > 0 && (
           <TodoFooter
-            todos={todos} // Footer cần danh sách đầy đủ để đếm
+            todos={todos}
             filter={filter}
             onFilterChange={this.handleFilterChange}
             onClearCompleted={this.handleClearCompleted}
+          />
+        )}
+        {todos.length > 0 && (
+          <Pagination
+            itemsPerPage={itemsPerPage}
+            totalItems={filteredTodos.length}
+            paginate={this.handlePageChange}
+            currentPage={currentPage}
           />
         )}
       </div>

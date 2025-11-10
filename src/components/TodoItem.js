@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
+import withRender from '../HOC/withRender'
 
 class TodoItem extends Component {
   constructor(props) {
     super(props);
     this.state = {
       isEditing: false,
-      editText: this.props.todo.text // State lưu text đang sửa
+      editText: this.props.todo.text
     };
-    this.editInputRef = React.createRef(); // Ref để focus vào input
+    this.editInputRef = React.createRef(); 
   }
 
   handleDoubleClick = () => {
@@ -46,6 +47,7 @@ class TodoItem extends Component {
   }
 
   render() {
+    console.log(`Item ${this.props.todo.id} da duoc render`)
     const { todo, onToggle, onDelete } = this.props;
     const { isEditing, editText } = this.state;
 
@@ -85,4 +87,4 @@ class TodoItem extends Component {
   }
 }
 
-export default TodoItem;
+export default withRender(TodoItem);

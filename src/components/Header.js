@@ -1,18 +1,35 @@
 import React, { Component } from 'react';
 
 class TodoHeader extends Component {
-  render() {
-    const { inputText, onInputChange, onAddTodo } = this.props;
+  constructor(props){
+    super(props);
+    this.state={
+      text:''
+    };
+  }
 
+  handleChange=(e)=>{
+    this.setState({text:e.target.value});
+  }
+
+  handleSubmit=(e)=>{
+    e.preventDefault();
+    const text = this.state.text.trim();
+    if(!text) return;
+    this.props.onAddTodo(text);
+    this.setState({text:''});
+  }
+
+  render() {
     return (
       <header className="header">
         <h1>todos</h1>
-        <form onSubmit={onAddTodo}>
+        <form onSubmit={this.handleSubmit}>
           <input
             className="new-todo"
             placeholder="Nhập công việc cần làm"
-            value={inputText}
-            onChange={onInputChange}
+            value={this.state.text}
+            onChange={this.handleChange}
             autoFocus
           />
         </form>
