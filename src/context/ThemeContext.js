@@ -1,20 +1,34 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, Component } from 'react';
 
-// 1. Tạo Context
+// Tạo context
 export const ThemeContext = createContext();
 
-// 2. Tạo Provider (component bao bọc)
-export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState('light'); // State mặc định là 'light'
-
-  const toggleTheme = () => {
-    setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
+export class ThemeProvider extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      theme: 'light',
+    };
+  }
+  toggleTheme = () => {
+    this.setState(prevState => ({
+      theme: prevState.theme === 'light' ? 'dark' : 'light'
+    }));
   };
 
-  // Cung cấp 'theme' và 'toggleTheme' cho các component con
-  return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  );
-};
+  render() {
+    const { theme } = this.state;
+    const { children } = this.props;
+
+    return (
+      <ThemeContext.Provider
+        value={{
+          theme,
+          toggleTheme: this.toggleTheme
+        }}
+      >
+        {children}
+      </ThemeContext.Provider>
+    );
+  }
+}
