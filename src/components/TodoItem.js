@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import withRender from '../HOC/withRender'
 
-class TodoItem extends Component {
+class TodoItem extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
@@ -47,7 +47,7 @@ class TodoItem extends Component {
   }
 
   render() {
-    console.log(`Item ${this.props.todo.id} da duoc render`)
+    console.log(`Todo ${this.props.todo.id} rendered`);
     const { todo, onToggle, onDelete } = this.props;
     const { isEditing, editText } = this.state;
 
