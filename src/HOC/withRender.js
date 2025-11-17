@@ -2,7 +2,7 @@ import React from 'react';
 
 function withRender(WrappedComponent){
     return class extends React.Component{
-        Update(nextProps){
+        shouldComponentUpdate(nextProps){
             if(nextProps.todo!==this.props.todo){
                 return true;
             }

@@ -1,13 +1,19 @@
 import React, { Component } from 'react';
 import {produce} from 'immer';
 import './App.css';
-import TodoList from './components/TodoList';
+import withVirtualScroll from "./HOC/withVirtualScroll";
 import TodoHeader from './components/Header';
 import TodoFooter from './components/Footer';
 import { ThemeContext } from './context/ThemeContext';
 import Pagination from './components/Pagination';
+import TodoList from "./components/TodoList"
+const VirtualTodoList = withVirtualScroll(TodoList);
 
-
+const Filter = {
+  ALL: 'all',
+  ACTIVE: 'active',
+  COMPLETED: 'completed'
+};
 
 class App extends Component {
   static contextType = ThemeContext;//đưa giá trị theme và toggleTheme vào this.context
@@ -16,10 +22,16 @@ class App extends Component {
     super(props);
     this.state = {
       todos: [],
-      filter: 'all',
+      filter: Filter.ALL,
       currentPage: 1,   
       itemsPerPage: 8
     };
+    this.headerRef = React.createRef();
+  }
+  handleItemStartEdit = () => {
+    if (this.headerRef.current) {
+      this.headerRef.current.focusInput();
+    }
   }
 
   handlePageChange = (pageNumber) => {
@@ -84,10 +96,6 @@ class App extends Component {
     this.setState({ filter: filter,currentPage:1 });
   }
 
-  handlePageChange = (pageNumber) => {
-    this.setState({ currentPage: pageNumber });
-  }
-
   // Xóa các mục đã hoàn thành
   handleClearCompleted = () => {
     this.setState(({ todos }) => ({
@@ -118,13 +126,17 @@ class App extends Component {
         >
           Theme {theme === 'light' ? 'Light' : 'Dark'} 
         </button>
-        <TodoHeader onAddTodo={this.handleAddTodo} />
+        <TodoHeader 
+          ref={this.headerRef}
+          onAddTodo={this.handleAddTodo} 
+        />
         {todos.length > 0 && (
-          <TodoList
+          <VirtualTodoList
             todos={currentTodos}
             onToggle={this.handleToggleTodo}
             onDelete={this.handleDeleteTodo}
             onEdit={this.handleEditTodo}
+            onItemStartEdit={this.handleItemStartEdit}
           />
         )}
         {todos.length > 0 && (
@@ -135,14 +147,14 @@ class App extends Component {
             onClearCompleted={this.handleClearCompleted}
           />
         )}
-        {todos.length > 0 && (
+        {/* {todos.length > 0 && (
           <Pagination
             itemsPerPage={itemsPerPage}
             totalItems={filteredTodos.length}
             paginate={this.handlePageChange}
             currentPage={currentPage}
           />
-        )}
+        )} */}
       </div>
     );
   }

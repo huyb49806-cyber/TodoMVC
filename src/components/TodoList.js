@@ -6,7 +6,7 @@ class TodoList extends Component {
     const { todos, onToggle, onDelete, onEdit } = this.props;
 
     return (
-      <section className="main">
+      // <section className="main">
         <ul className="todo-list">
           {todos.map(todo => (
             <TodoItem
@@ -18,7 +18,7 @@ class TodoList extends Component {
             />
           ))}
         </ul>
-      </section>
+      // </section>
     );
   }
 }

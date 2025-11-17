@@ -1,7 +1,7 @@
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import withRender from '../HOC/withRender'
 
-class TodoItem extends PureComponent {
+class TodoItem extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -13,6 +13,9 @@ class TodoItem extends PureComponent {
 
   handleDoubleClick = () => {
     this.setState({ isEditing: true, editText: this.props.todo.text });
+    if (this.props.onItemStartEdit) {
+      this.props.onItemStartEdit();
+    }
   }
 
   handleChange = (e) => {
@@ -39,12 +42,11 @@ class TodoItem extends PureComponent {
     }
   }
 
-  // Tự động focus khi component update thành isEditing: true`
   componentDidUpdate(prevProps, prevState) {
     if (!prevState.isEditing && this.state.isEditing) {
       this.editInputRef.current.focus();
     }
-  }
+  }  
 
   render() {
     console.log(`Todo ${this.props.todo.id} rendered`);

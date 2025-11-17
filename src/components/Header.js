@@ -6,6 +6,12 @@ class TodoHeader extends Component {
     this.state={
       text:''
     };
+    this.inputRef = React.createRef();
+  }
+  focusInput = () => {
+    if (this.inputRef.current) {
+      this.inputRef.current.focus();
+    }
   }
 
   handleChange=(e)=>{
@@ -26,6 +32,7 @@ class TodoHeader extends Component {
         <h1>todos</h1>
         <form onSubmit={this.handleSubmit}>
           <input
+            ref={this.inputRef}
             className="new-todo"
             placeholder="Nhập công việc cần làm"
             value={this.state.text}
