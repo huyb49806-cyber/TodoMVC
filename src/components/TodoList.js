@@ -3,10 +3,9 @@ import TodoItem from './TodoItem';
 
 class TodoList extends Component {
   render() {
-    const { todos, onToggle, onDelete, onEdit } = this.props;
+    const { todos, onToggle, onDelete, onItemStartEdit } = this.props;
 
     return (
-      // <section className="main">
         <ul className="todo-list">
           {todos.map(todo => (
             <TodoItem
@@ -14,11 +13,10 @@ class TodoList extends Component {
               todo={todo}
               onToggle={onToggle}
               onDelete={onDelete}
-              onEdit={onEdit} 
+              onItemStartEdit={onItemStartEdit} 
             />
           ))}
         </ul>
-      // </section>
     );
   }
 }

@@ -2,65 +2,20 @@ import React, { Component } from 'react';
 import withRender from '../HOC/withRender'
 
 class TodoItem extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      isEditing: false,
-      editText: this.props.todo.text
-    };
-    this.editInputRef = React.createRef(); 
-  }
-
   handleDoubleClick = () => {
-    this.setState({ isEditing: true, editText: this.props.todo.text });
-    if (this.props.onItemStartEdit) {
-      this.props.onItemStartEdit();
+    const { todo, onItemStartEdit } = this.props;
+    if (onItemStartEdit) {
+      onItemStartEdit(todo.id, todo.text);
     }
   }
-
-  handleChange = (e) => {
-    this.setState({ editText: e.target.value });
-  }
-
-  // Xử lý khi nhấn Enter hoặc blur (mất focus)
-  handleSubmit = () => {
-    const { todo, onEdit } = this.props;
-    const { editText } = this.state;
-    
-    if (editText.trim() !== todo.text) {
-      onEdit(todo.id, editText);
-    }
-    this.setState({ isEditing: false });
-  }
-
-  handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      this.handleSubmit();
-    }
-    if (e.key === 'Escape') {
-      this.setState({ isEditing: false, editText: this.props.todo.text });
-    }
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (!prevState.isEditing && this.state.isEditing) {
-      this.editInputRef.current.focus();
-    }
-  }  
 
   render() {
     console.log(`Todo ${this.props.todo.id} rendered`);
     const { todo, onToggle, onDelete } = this.props;
-    const { isEditing, editText } = this.state;
-
-    // Class của <li>, thêm editing nếu đang sửa
-    let liClassName = '';
-    if (todo.completed) liClassName = 'completed';
-    if (isEditing) liClassName += ' editing';
+    const liClassName = todo.completed ? 'completed' : '';
 
     return (
       <li className={liClassName.trim()}>
-        {!isEditing ? (
           <div className="view">
             <input
               className="toggle"
@@ -74,16 +29,6 @@ class TodoItem extends Component {
               onClick={() => onDelete(todo.id)}
             ></button>
           </div>
-        ) : (
-          <input
-            ref={this.editInputRef}
-            className="edit" // CSS cho class "edit" cần được thêm vào
-            value={editText}
-            onChange={this.handleChange}
-            onBlur={this.handleSubmit} // Tự submit khi mất focus
-            onKeyDown={this.handleKeyDown}
-          />
-        )}
       </li>
     );
   }

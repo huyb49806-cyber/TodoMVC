@@ -31,7 +31,7 @@ function withVirtualScroll(WrappedComponent) {
       const startIndex = Math.floor(scrollTop / itemHeight);
       const visibleCount = Math.ceil(containerHeight / itemHeight);
 
-      const endIndex = startIndex + visibleCount + 3; // buffer
+      const endIndex = startIndex + visibleCount + 3;
 
       this.setState({ startIndex, endIndex });
     };

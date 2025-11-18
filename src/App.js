@@ -5,7 +5,7 @@ import withVirtualScroll from "./HOC/withVirtualScroll";
 import TodoHeader from './components/Header';
 import TodoFooter from './components/Footer';
 import { ThemeContext } from './context/ThemeContext';
-import Pagination from './components/Pagination';
+// import Pagination from './components/Pagination';
 import TodoList from "./components/TodoList"
 const VirtualTodoList = withVirtualScroll(TodoList);
 
@@ -23,20 +23,34 @@ class App extends Component {
     this.state = {
       todos: [],
       filter: Filter.ALL,
-      currentPage: 1,   
-      itemsPerPage: 8
+      // currentPage: 1,   
+      // itemsPerPage: 8,
+      editingId: null,
+      headerInputValue: ''
     };
-    this.headerRef = React.createRef();
   }
-  handleItemStartEdit = () => {
-    if (this.headerRef.current) {
-      this.headerRef.current.focusInput();
+
+  handleSaveTodo = (text) => {
+    const { editingId } = this.state;
+    if (editingId) {
+      this.handleEditTodo(editingId, text);
+      this.setState({ editingId: null, headerInputValue: '' });
+    } else {
+      this.handleAddTodo(text);
     }
   }
 
-  handlePageChange = (pageNumber) => {
-    this.setState({ currentPage: pageNumber });
+  // Nhận từ TodoItem, đẩy lên state App
+  handleItemStartEdit = (id, text) => {
+    this.setState({
+      editingId: id,
+      headerInputValue: text
+    });
   }
+
+  // handlePageChange = (pageNumber) => {
+  //   this.setState({ currentPage: pageNumber });
+  // }
 
   // Thêm công việc
   handleAddTodo = (text) => {
@@ -112,12 +126,12 @@ class App extends Component {
   }
 
   render() {
-    const { todos, filter,currentPage,itemsPerPage } = this.state;
+    const { todos, filter, editingId, headerInputValue } = this.state;
     const { theme, toggleTheme } = this.context;
     const filteredTodos = this.getFilteredTodos();
-    const indexOfLastTodo = currentPage * itemsPerPage; //trang 2: 2*8=16
-    const indexOfFirstTodo = indexOfLastTodo - itemsPerPage;
-    const currentTodos = filteredTodos.slice(indexOfFirstTodo, indexOfLastTodo);
+    // const indexOfLastTodo = currentPage * itemsPerPage; //trang 2: 2*8=16
+    // const indexOfFirstTodo = indexOfLastTodo - itemsPerPage;
+    // const currentTodos = filteredTodos.slice(indexOfFirstTodo, indexOfLastTodo);
     return (
       <div className={`todoapp ${theme}`}>
         <button
@@ -127,15 +141,15 @@ class App extends Component {
           Theme {theme === 'light' ? 'Light' : 'Dark'} 
         </button>
         <TodoHeader 
-          ref={this.headerRef}
-          onAddTodo={this.handleAddTodo} 
+          onSave={this.handleSaveTodo}
+          inputValue={headerInputValue} 
+          editingId={editingId} 
         />
         {todos.length > 0 && (
           <VirtualTodoList
-            todos={currentTodos}
+            todos={filteredTodos}
             onToggle={this.handleToggleTodo}
             onDelete={this.handleDeleteTodo}
-            onEdit={this.handleEditTodo}
             onItemStartEdit={this.handleItemStartEdit}
           />
         )}
