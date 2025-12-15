@@ -66,41 +66,31 @@ class App extends Component {
   }
 
   // Chuyển đổi trạng thái complete
-  handleToggleTodo = (id) => {
+  handleToggleTodo = (index) => {
     this.setState(
       produce((draft) => {
-        const todo = draft.todos.find((t) => t.id === id);
-        if (todo) {
-          todo.completed = !todo.completed;
-        }
+        draft.todos[index].completed = !draft.todos[index].completed;
       })
     );
   }
 
   // Xóa công việc
-  handleDeleteTodo = (id) => {
+  handleDeleteTodo = (index) => {
     this.setState(
       produce((draft) => {
-        const index = draft.todos.findIndex((t) => t.id === id);
-        if (index !== -1) {
-          draft.todos.splice(index, 1);
-        }
+        draft.todos.splice(index, 1);
       })
     );
   }
-
+  
   // Sửa công việc
-  handleEditTodo = (id, newText) => {
+  handleEditTodo = (index, newText) => {
     if (!newText.trim()) {
-      this.handleDeleteTodo(id);
       return;
     }
     this.setState(
       produce((draft) => {
-        const todo = draft.todos.find((t) => t.id === id);
-        if (todo) {
-          todo.text = newText;
-        }
+          draft.todos[index].text = newText;
       })
     );
   }
